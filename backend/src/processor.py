@@ -271,6 +271,17 @@ class VideoProcessor:
         for target_lang in target_languages:
             logger.info(f"Processing language: {target_lang}")
 
+            # Check if transcript and article already exist for this language
+            existing_transcript = self.supabase.get_transcript(video_id, target_lang)
+            existing_article = self.supabase.get_article(video_id, target_lang)
+
+            # Skip if both transcript and article already exist
+            if existing_transcript and existing_article:
+                logger.info(
+                    f"Language {target_lang} already processed (transcript and article exist), skipping"
+                )
+                continue
+
             # Skip translation if target language is the same as source language
             if target_lang == source_language:
                 logger.info(
@@ -278,88 +289,100 @@ class VideoProcessor:
                 )
                 translated = transcript
             else:
-                # Translate transcript
-                self.supabase.log_processing(
-                    video_id, f"translate_{target_lang}", "started"
-                )
-
-                translated = await self._fetch_with_retry(
-                    f"translate_{target_lang}",
-                    lambda: self.translator.translate_transcript(
-                        str(transcript), target_lang, source_language
-                    ),
-                )
-
-                if not translated:
-                    logger.warning(f"Translation failed for {target_lang}, skipping...")
-                    self.supabase.log_processing(
-                        video_id, f"translate_{target_lang}", "failed"
+                # Only translate if transcript doesn't exist
+                if existing_transcript:
+                    logger.info(
+                        f"Transcript for {target_lang} already exists, skipping translation"
                     )
-                    continue
+                    translated = existing_transcript["content"]
+                else:
+                    # Translate transcript
+                    self.supabase.log_processing(
+                        video_id, f"translate_{target_lang}", "started"
+                    )
 
-            # Save translated transcript
-            try:
-                self.supabase.upsert_transcript(
-                    {
-                        "video_id": video["id"],
-                        "language": target_lang,
-                        "content": translated,
-                        "source_type": (
-                            "youtube"
-                            if target_lang == source_language
-                            else "glm_translation"
+                    translated = await self._fetch_with_retry(
+                        f"translate_{target_lang}",
+                        lambda: self.translator.translate_transcript(
+                            str(transcript), target_lang, source_language
                         ),
-                        "is_original": target_lang == source_language,
-                        "word_count": self.transcript_fetcher.get_word_count(
-                            translated
-                        ),
-                        "char_count": self.transcript_fetcher.get_char_count(
-                            translated
-                        ),
-                    }
-                )
-            except Exception as e:
-                logger.error(f"Failed to save translated transcript: {e}")
-                continue
+                    )
 
-            # Generate article
-            self.supabase.log_processing(
-                video_id, f"generate_article_{target_lang}", "started"
-            )
+                    if not translated:
+                        logger.warning(
+                            f"Translation failed for {target_lang}, skipping..."
+                        )
+                        self.supabase.log_processing(
+                            video_id, f"translate_{target_lang}", "failed"
+                        )
+                        continue
 
-            article_data = await self._fetch_with_retry(
-                f"generate_article_{target_lang}",
-                lambda: self.article_generator.generate_article(
-                    str(translated), video_details, target_lang
-                ),
-            )
-
-            if article_data:
+            # Save translated transcript (only if we just translated it)
+            if not existing_transcript and not (target_lang == source_language):
                 try:
-                    self.supabase.upsert_article(
+                    self.supabase.upsert_transcript(
                         {
                             "video_id": video["id"],
                             "language": target_lang,
-                            "title": video_details[
-                                "title"
-                            ],  # Could be translated later
-                            "content": article_data["content"],
-                            "summary": article_data["summary"],
-                            "tags": article_data["tags"],
-                            "reading_time": article_data["reading_time"],
-                            "word_count": article_data["word_count"],
+                            "content": translated,
+                            "source_type": "glm_translation",
+                            "is_original": False,
+                            "word_count": self.transcript_fetcher.get_word_count(
+                                translated
+                            ),
+                            "char_count": self.transcript_fetcher.get_char_count(
+                                translated
+                            ),
                         }
                     )
-                    self.supabase.log_processing(
-                        video_id, f"generate_article_{target_lang}", "success"
-                    )
                 except Exception as e:
-                    logger.error(f"Failed to save article: {e}")
-            else:
-                logger.warning(f"Article generation failed for {target_lang}")
-                self.supabase.log_processing(
-                    video_id, f"generate_article_{target_lang}", "failed"
+                    logger.error(f"Failed to save translated transcript: {e}")
+                    continue
+
+            # Skip article generation if article already exists
+            if existing_article:
+                logger.info(
+                    f"Article for {target_lang} already exists, skipping generation"
                 )
+            else:
+                # Generate article
+                self.supabase.log_processing(
+                    video_id, f"generate_article_{target_lang}", "started"
+                )
+
+                article_data = await self._fetch_with_retry(
+                    f"generate_article_{target_lang}",
+                    lambda: self.article_generator.generate_article(
+                        str(translated), video_details, target_lang
+                    ),
+                )
+
+                if article_data:
+                    try:
+                        self.supabase.upsert_article(
+                            {
+                                "video_id": video["id"],
+                                "language": target_lang,
+                                "title": video_details[
+                                    "title"
+                                ],  # Could be translated later
+                                "content": article_data["content"],
+                                "summary": article_data["summary"],
+                                "tags": article_data["tags"],
+                                "reading_time": article_data["reading_time"],
+                                "word_count": article_data["word_count"],
+                            }
+                        )
+                        self.supabase.log_processing(
+                            video_id, f"generate_article_{target_lang}", "success"
+                        )
+                    except Exception as e:
+                        logger.error(f"Failed to save article: {e}")
+                else:
+                    logger.warning(f"Article generation failed for {target_lang}")
+                    self.supabase.log_processing(
+                        video_id, f"generate_article_{target_lang}", "failed"
+                    )
 
         # Mark video as completed
         self.supabase.update_video_status(video_id, "completed")
