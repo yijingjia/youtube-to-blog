@@ -30,6 +30,7 @@ export function AddChannelDialog({ isOpen, onClose, onChannelAdded }: AddChannel
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['zh-Hans'])
 
   const languages = [
+    { code: 'en', name: 'English' },
     { code: 'zh-Hans', name: '简体中文' },
     { code: 'zh-Hant', name: '繁體中文' },
     { code: 'ja', name: '日本語' },

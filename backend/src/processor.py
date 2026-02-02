@@ -94,7 +94,9 @@ class VideoProcessor:
                 logger.warning(f"⏭️  [{idx}/{len(video_ids)}] {video_id} skipped")
                 results["skipped"] += 1
             else:
-                logger.error(f"❌ [{idx}/{len(video_ids)}] {video_id} failed: {result.get('message', 'Unknown')}")
+                logger.error(
+                    f"❌ [{idx}/{len(video_ids)}] {video_id} failed: {result.get('message', 'Unknown')}"
+                )
                 results["failed"] += 1
                 results["errors"].append(result.get("message", "Unknown error"))
 
@@ -109,7 +111,10 @@ class VideoProcessor:
     # -------------------------
 
     async def process_video(
-        self, video_id: str, channel_id: Optional[str] = None, target_languages: Optional[List[str]] = None
+        self,
+        video_id: str,
+        channel_id: Optional[str] = None,
+        target_languages: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Process a single video through the complete pipeline.
@@ -143,19 +148,21 @@ class VideoProcessor:
         ):
             logger.info(f"Skipping Short video: {video_id}")
             # Mark as skipped with full metadata to avoid NOT NULL constraint errors
-            self.supabase.upsert_video({
-                "video_id": video_id,
-                "title": video_details["title"],
-                "description": video_details.get("description", ""),
-                "thumbnail_url": video_details.get("thumbnail_url", ""),
-                "duration": video_details["duration"],
-                "published_at": video_details.get("published_at"),
-                "view_count": video_details.get("view_count"),
-                "like_count": video_details.get("like_count"),
-                "comment_count": video_details.get("comment_count"),
-                "processing_status": "skipped",
-                "error_message": "Video is too short (Shorts)",
-            })
+            self.supabase.upsert_video(
+                {
+                    "video_id": video_id,
+                    "title": video_details["title"],
+                    "description": video_details.get("description", ""),
+                    "thumbnail_url": video_details.get("thumbnail_url", ""),
+                    "duration": video_details["duration"],
+                    "published_at": video_details.get("published_at"),
+                    "view_count": video_details.get("view_count"),
+                    "like_count": video_details.get("like_count"),
+                    "comment_count": video_details.get("comment_count"),
+                    "processing_status": "skipped",
+                    "error_message": "Video is too short (Shorts)",
+                }
+            )
             return {"status": "skipped", "message": "Short video"}
 
         # Create or update video record using upsert
@@ -181,7 +188,9 @@ class VideoProcessor:
                     video_data["channel_id"] = channel["id"]
                     # Use channel's target_languages if not explicitly provided
                     if target_languages is None:
-                        target_languages = channel.get("target_languages", TARGET_LANGUAGES)
+                        target_languages = channel.get(
+                            "target_languages", TARGET_LANGUAGES
+                        )
 
             # Fallback to global config if still not set
             if target_languages is None:
@@ -195,11 +204,21 @@ class VideoProcessor:
             logger.error(f"Failed to upsert video record: {e}")
             return {"status": "error", "message": f"Database error: {e}"}
 
-        # Step 1: Fetch English transcript
+        # Detect video original language
+        self.supabase.log_processing(video_id, "detect_language", "started")
+        source_language = self.transcript_fetcher.detect_video_language(video_id)
+        if not source_language:
+            source_language = "en"  # Default to English if detection fails
+            logger.warning(f"Could not detect language, defaulting to English")
+        else:
+            logger.info(f"Detected source language: {source_language}")
+            self.supabase.log_processing(video_id, "detect_language", "success")
+
+        # Step 1: Fetch original transcript in detected language
         self.supabase.log_processing(video_id, "fetch_transcript", "started")
         transcript = await self._fetch_with_retry(
             "transcript",
-            lambda: self.transcript_fetcher.fetch_transcript(video_id, "en"),
+            lambda: self.transcript_fetcher.fetch_transcript(video_id, source_language),
         )
 
         if not transcript:
@@ -231,12 +250,12 @@ class VideoProcessor:
             logger.error(f"Video record not found for {video_id}")
             return {"status": "error", "message": "Video record not found"}
 
-        # Save English transcript
+        # Save original transcript in detected language
         try:
             self.supabase.upsert_transcript(
                 {
                     "video_id": video["id"],
-                    "language": "en",
+                    "language": source_language,
                     "content": transcript,
                     "source_type": "youtube",
                     "is_original": True,
@@ -252,24 +271,31 @@ class VideoProcessor:
         for target_lang in target_languages:
             logger.info(f"Processing language: {target_lang}")
 
-            # Translate transcript
-            self.supabase.log_processing(
-                video_id, f"translate_{target_lang}", "started"
-            )
-
-            translated = await self._fetch_with_retry(
-                f"translate_{target_lang}",
-                lambda: self.translator.translate_transcript(
-                    str(transcript), target_lang
-                ),
-            )
-
-            if not translated:
-                logger.warning(f"Translation failed for {target_lang}, skipping...")
-                self.supabase.log_processing(
-                    video_id, f"translate_{target_lang}", "failed"
+            # Skip translation if target language is the same as source language
+            if target_lang == source_language:
+                logger.info(
+                    f"Target language {target_lang} is same as source language, using original transcript"
                 )
-                continue
+                translated = transcript
+            else:
+                # Translate transcript
+                self.supabase.log_processing(
+                    video_id, f"translate_{target_lang}", "started"
+                )
+
+                translated = await self._fetch_with_retry(
+                    f"translate_{target_lang}",
+                    lambda: self.translator.translate_transcript(
+                        str(transcript), target_lang, source_language
+                    ),
+                )
+
+                if not translated:
+                    logger.warning(f"Translation failed for {target_lang}, skipping...")
+                    self.supabase.log_processing(
+                        video_id, f"translate_{target_lang}", "failed"
+                    )
+                    continue
 
             # Save translated transcript
             try:
@@ -278,8 +304,12 @@ class VideoProcessor:
                         "video_id": video["id"],
                         "language": target_lang,
                         "content": translated,
-                        "source_type": "glm_translation",
-                        "is_original": False,
+                        "source_type": (
+                            "youtube"
+                            if target_lang == source_language
+                            else "glm_translation"
+                        ),
+                        "is_original": target_lang == source_language,
                         "word_count": self.transcript_fetcher.get_word_count(
                             translated
                         ),

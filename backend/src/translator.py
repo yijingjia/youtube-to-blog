@@ -297,12 +297,14 @@ class Translator:
                 # Check for rate limiting error (429 or code 1302)
                 if "429" in error_msg or "1302" in error_msg:
                     # Longer wait for rate limiting: 5s, 10s, 20s
-                    wait_time = 5 * (2 ** attempt)
-                    logger.warning(f"Rate limited, waiting {wait_time}s before retry...")
+                    wait_time = 5 * (2**attempt)
+                    logger.warning(
+                        f"Rate limited, waiting {wait_time}s before retry..."
+                    )
                     await asyncio.sleep(wait_time)
                 else:
                     # Exponential backoff for other errors: 2s, 4s, 8s
-                    await asyncio.sleep(2 ** attempt)
+                    await asyncio.sleep(2**attempt)
 
         return None
 
@@ -482,10 +484,7 @@ class Translator:
             "es": "Spanish",
             "fr": "French",
             "de": "German",
-            "it": "Italian",
             "pt": "Portuguese",
-            "ru": "Russian",
-            "ar": "Arabic",
         }
 
         return language_map.get(code, code)

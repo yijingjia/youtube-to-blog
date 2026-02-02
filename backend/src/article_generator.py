@@ -44,13 +44,41 @@ class ArticleGenerator:
 
         # Language-specific prompts
         language_prompts = {
+            "en": {
+                "summary": "English",
+                "instruction": "Generate a high-quality blog article in English",
+            },
             "zh-Hans": {
                 "summary": "中文简体",
                 "instruction": "生成一篇高质量的中文博客文章",
             },
+            "zh-Hant": {
+                "summary": "中文繁體",
+                "instruction": "生成一篇高品質的繁體中文部落格文章",
+            },
             "ja": {
                 "summary": "日本語",
                 "instruction": "日本語の高品質なブログ記事を生成する",
+            },
+            "ko": {
+                "summary": "한국어",
+                "instruction": "고품질 한국어 블로그 글을 작성하다",
+            },
+            "es": {
+                "summary": "Español",
+                "instruction": "Generar un artículo de blog de alta calidad en español",
+            },
+            "fr": {
+                "summary": "Français",
+                "instruction": "Générer un article de blog de haute qualité en français",
+            },
+            "de": {
+                "summary": "Deutsch",
+                "instruction": "Erstellen Sie einen hochwertigen Blogartikel auf Deutsch",
+            },
+            "pt": {
+                "summary": "Português",
+                "instruction": "Gerar um artigo de blog de alta qualidade em português",
             },
         }
 
@@ -85,9 +113,27 @@ class ArticleGenerator:
                 summary = self._extract_summary(article_content)
                 tags = self._extract_tags(article_content, metadata)
 
-                # Calculate reading time
-                word_count = len(article_content.split())
-                reading_time = max(1, word_count // 200)  # ~200 words per minute
+                # Calculate reading time based on language
+                # CJK languages (Chinese, Japanese, Korean) use characters instead of word boundaries
+                cjk_languages = ["zh-Hans", "zh-Hant", "ja", "ko"]
+                if any(language.startswith(lang) for lang in cjk_languages):
+                    # Count CJK characters
+                    import re
+
+                    # Match CJK characters: Hanzi, Hiragana, Katakana, Hangul
+                    word_count = len(
+                        re.findall(
+                            r"[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]",
+                            article_content,
+                        )
+                    )
+                    reading_time = max(
+                        1, word_count // 400
+                    )  # ~400 CJK chars per minute
+                else:
+                    # Western languages: count words by whitespace
+                    word_count = len(article_content.split())
+                    reading_time = max(1, word_count // 200)  # ~200 words per minute
 
                 logger.success(
                     f"✓ Article generated ({word_count} words, {reading_time} min read)"
@@ -226,18 +272,35 @@ class ArticleGenerator:
     # -------------------------
 
     @staticmethod
-    def calculate_reading_time(word_count: int, words_per_minute: int = 200) -> int:
+    def calculate_reading_time(content: str, language: str = "en") -> int:
         """
-        Calculate estimated reading time.
+        Calculate estimated reading time based on language.
 
         Args:
-            word_count: Number of words in article
-            words_per_minute: Average reading speed
+            content: Article content
+            language: Language code (e.g., 'zh-Hans', 'ja', 'en')
 
         Returns:
             Reading time in minutes
         """
-        return max(1, word_count // words_per_minute)
+        import re
+
+        # CJK languages (Chinese, Japanese, Korean) use characters instead of word boundaries
+        cjk_languages = ["zh-Hans", "zh-Hant", "ja", "ko"]
+        if any(language.startswith(lang) for lang in cjk_languages):
+            # Count CJK characters
+            # Match CJK characters: Hanzi, Hiragana, Katakana, Hangul
+            char_count = len(
+                re.findall(
+                    r"[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]",
+                    content,
+                )
+            )
+            return max(1, char_count // 400)  # ~400 CJK chars per minute
+        else:
+            # Western languages: count words by whitespace
+            word_count = len(content.split())
+            return max(1, word_count // 200)  # ~200 words per minute
 
     @staticmethod
     def validate_article_content(content: str) -> bool:

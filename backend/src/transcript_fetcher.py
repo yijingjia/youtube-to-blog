@@ -280,6 +280,49 @@ class TranscriptFetcher:
 
         return "\n\n".join(paragraphs)
 
+    def detect_video_language(self, video_id: str) -> Optional[str]:
+        """
+        Detect the original language of a video by checking available transcripts.
+
+        Args:
+            video_id: YouTube video ID
+
+        Returns:
+            Language code (e.g., 'en', 'fr', 'es') or None if not found
+        """
+        try:
+            # Get list of available transcript languages
+            transcript_list = self.yt_api.list(video_id)
+
+            if transcript_list and len(transcript_list) > 0:
+                # Prefer manually created transcripts (generated ones have language_code with 'auto' prefix)
+                manual_transcripts = [
+                    t for t in transcript_list if not t.language_code.startswith("auto")
+                ]
+
+                if manual_transcripts:
+                    detected_lang = manual_transcripts[0].language_code
+                    logger.info(f"Detected video language: {detected_lang}")
+                    return detected_lang
+                else:
+                    # Fall back to auto-generated transcripts
+                    detected_lang = transcript_list[0].language_code
+                    logger.info(
+                        f"Detected video language (auto-generated): {detected_lang}"
+                    )
+                    return detected_lang
+
+            logger.warning(
+                f"No transcripts found for video {video_id}, defaulting to English"
+            )
+            return None
+
+        except Exception as e:
+            logger.warning(
+                f"Failed to detect language for {video_id}: {e}, defaulting to English"
+            )
+            return None
+
     def get_word_count(self, text: str) -> int:
         """Get word count of transcript."""
         return len(text.split())

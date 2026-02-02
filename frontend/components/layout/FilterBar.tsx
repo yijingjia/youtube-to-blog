@@ -34,17 +34,13 @@ const dateOptions = [
 const languageNames: Record<string, string> = {
   'en': 'English',
   'zh-Hans': '中文 (简体)',
-  'zh-CN': '中文 (简体)',
   'zh-Hant': '中文 (繁體)',
   'ja': '日本語',
   'ko': '한국어',
   'es': 'Español',
   'fr': 'Français',
   'de': 'Deutsch',
-  'it': 'Italiano',
   'pt': 'Português',
-  'ru': 'Русский',
-  'ar': 'العربية',
 }
 
 export function FilterBar({ channels, languages }: FilterBarProps) {

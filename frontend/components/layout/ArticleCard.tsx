@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Eye, Clock } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
 import { ArticleWithVideo } from '@/types/supabase'
 
@@ -111,10 +111,6 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
         
         <div className="mt-auto flex items-center justify-between border-t border-border/50 pt-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-3">
-             <div className="flex items-center gap-1">
-               <Eye className="h-3 w-3" />
-               {article.view_count || 0}
-             </div>
              <div className="flex items-center gap-1">
                <Clock className="h-3 w-3" />
                {article.reading_time || 5} min
