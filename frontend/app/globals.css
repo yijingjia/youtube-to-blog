@@ -1,0 +1,290 @@
+@import "tailwindcss";
+
+/* Typography styles for prose */
+.prose {
+  color: var(--foreground);
+  max-width: 65ch;
+  line-height: 1.75;
+}
+
+.prose h1 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 2.25em;
+  margin-top: 0;
+  margin-bottom: 0.8888889em;
+  line-height: 1.1111111;
+  color: var(--foreground);
+}
+
+.prose h2 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 1.5em;
+  margin-top: 2em;
+  margin-bottom: 1em;
+  line-height: 1.3333333;
+  color: var(--foreground);
+}
+
+.prose h3 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 1.25em;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+  line-height: 1.6;
+  color: var(--foreground);
+}
+
+.prose h4, .prose h5, .prose h6 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.prose p {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  color: var(--foreground);
+  opacity: 0.8;
+}
+
+.prose a {
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 1px solid rgb(from var(--primary) r g b / 0.3);
+}
+
+.prose a:hover {
+  border-bottom-color: var(--primary);
+}
+
+.prose strong {
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.prose code {
+  color: var(--primary);
+  background-color: var(--secondary);
+  padding: 0.25em 0.375em;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  font-size: 0.875em;
+}
+
+.prose pre {
+  color: var(--foreground);
+  background-color: var(--secondary);
+  overflow-x: auto;
+  font-size: 0.875em;
+  line-height: 1.7142857;
+  margin-top: 1.7142857em;
+  margin-bottom: 1.7142857em;
+  border-radius: 0.375rem;
+  padding: 0.8571429em 1.1428571em;
+}
+
+.prose pre code {
+  background-color: transparent;
+  border-width: 0;
+  border-radius: 0;
+  padding: 0;
+  font-weight: 400;
+  color: inherit;
+  font-size: inherit;
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--primary);
+  background-color: rgb(from var(--secondary) r g b / 0.3);
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  padding-left: 1.5em;
+  padding-right: 0;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  font-style: normal;
+  margin-top: 1.6em;
+  margin-bottom: 1.6em;
+  color: var(--foreground);
+}
+
+.prose img {
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+.prose ul, .prose ol {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  padding-left: 1.625em;
+}
+
+.prose li {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+/* prose-lg variant */
+.prose-lg {
+  font-size: 1.125em;
+  line-height: 1.7777778;
+}
+
+.prose-lg h1 {
+  font-size: 2.25em;
+  margin-top: 0;
+  margin-bottom: 0.8888889em;
+  line-height: 1.1111111;
+}
+
+.prose-lg h2 {
+  font-size: 1.5em;
+  margin-top: 2em;
+  margin-bottom: 1em;
+  line-height: 1.3333333;
+}
+
+.prose-lg h3 {
+  font-size: 1.25em;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+  line-height: 1.6;
+}
+
+.prose-lg p {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  line-height: 1.7777778;
+}
+
+/* prose-xl variant for md breakpoint */
+@media (min-width: 768px) {
+  .prose-xl {
+    font-size: 1.25em;
+    line-height: 1.7777778;
+  }
+
+  .prose-xl h1 {
+    font-size: 2.25em;
+    margin-top: 0;
+    margin-bottom: 0.8888889em;
+    line-height: 1.1111111;
+  }
+
+  .prose-xl h2 {
+    font-size: 1.5em;
+    margin-top: 2em;
+    margin-bottom: 1em;
+    line-height: 1.3333333;
+  }
+
+  .prose-xl h3 {
+    font-size: 1.25em;
+    margin-top: 1.6em;
+    margin-bottom: 0.6em;
+    line-height: 1.6;
+  }
+
+  .prose-xl p {
+    margin-top: 1.25em;
+    margin-bottom: 1.25em;
+    line-height: 1.7777778;
+  }
+}
+
+:root {
+  --background: #FDFCF8;
+  --foreground: #1A1918;
+  --card: #FFFFFF;
+  --card-foreground: #1A1918;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1918;
+  --primary: #D94625;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F2F0E9;
+  --secondary-foreground: #1A1918;
+  --muted: #F5F4F0;
+  --muted-foreground: #737373;
+  --accent: #F4EBE6;
+  --accent-foreground: #D94625;
+  --destructive: #ef4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #E6E4DD;
+  --input: #E6E4DD;
+  --ring: #D94625;
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  
+  --font-serif: var(--font-playfair), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-body: var(--font-lora), ui-serif, Georgia, serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0C0C0C;
+    --foreground: #E6E4DD;
+    --card: #141414;
+    --card-foreground: #E6E4DD;
+    --popover: #141414;
+    --popover-foreground: #E6E4DD;
+    --primary: #D94625;
+    --primary-foreground: #FFFFFF;
+    --secondary: #1F1F1F;
+    --secondary-foreground: #E6E4DD;
+    --muted: #1F1F1F;
+    --muted-foreground: #A3A3A3;
+    --accent: #1F1F1F;
+    --accent-foreground: #E6E4DD;
+    --destructive: #991b1b;
+    --destructive-foreground: #FFFFFF;
+    --border: #262626;
+    --input: #262626;
+    --ring: #D94625;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}

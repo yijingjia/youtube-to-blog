@@ -1,0 +1,26 @@
+#!/bin/bash
+# YouTube to Blog - Background Task Wrapper Template
+# Replace [[USER_HOME]] and [[PROJECT_PATH]] using instructions in README.md
+
+export PATH="[[USER_HOME]]/.local/bin:$PATH"
+cd [[PROJECT_PATH]]/backend
+
+# Add current directory to PYTHONPATH so "from src..." imports work
+export PYTHONPATH=$PYTHONPATH:.
+
+# Force Python to flush stdout/stderr immediately (no buffering)
+export PYTHONUNBUFFERED=1
+
+# Create a timestamped log file for this run
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+mkdir -p logs
+LOG_FILE="[[PROJECT_PATH]]/backend/logs/processor_${TIMESTAMP}.log"
+
+# Log start time
+echo "Starting job at $(date)" | tee -a "$LOG_FILE"
+
+# Run with uv, redirecting output to both console (for launchd capture) and the timestamped file
+uv run src/main.py 2>&1 | tee -a "$LOG_FILE"
+
+# Log end time
+echo "Job finished at $(date)" | tee -a "$LOG_FILE"

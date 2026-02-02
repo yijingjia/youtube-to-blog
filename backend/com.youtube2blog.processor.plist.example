@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.youtube2blog.processor</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>[[PROJECT_PATH]]/backend/run_cron.sh</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>3</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>[[PROJECT_PATH]]/backend/logs/latest.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>[[PROJECT_PATH]]/backend/logs/latest.stderr.log</string>
+    <key>WorkingDirectory</key>
+    <string>[[PROJECT_PATH]]/backend</string>
+</dict>
+</plist>
