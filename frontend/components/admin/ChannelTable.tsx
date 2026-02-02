@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   MoreVertical,
   Trash2,
@@ -149,10 +150,12 @@ export function ChannelTable({ channels, onChannelsChange }: ChannelTableProps) 
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
                   {channel.thumbnail_url && (
-                    <img
+                    <Image
                       src={channel.thumbnail_url}
                       alt={channel.channel_name}
-                      className="h-10 w-10 rounded-full border border-border"
+                      width={40}
+                      height={40}
+                      className="rounded-full border border-border"
                     />
                   )}
                   <div>
