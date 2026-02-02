@@ -10,9 +10,11 @@ import {
   ExternalLink,
   Play,
   Loader2,
+  Globe,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChannelRow } from '@/types/supabase'
+import { EditChannelLanguagesDialog } from './EditChannelLanguagesDialog'
 
 interface ChannelTableProps {
   channels: ChannelRow[]
@@ -23,6 +25,7 @@ export function ChannelTable({ channels, onChannelsChange }: ChannelTableProps) 
   const [actionMenu, setActionMenu] = useState<string | null>(null)
   const [processing, setProcessing] = useState<string | null>(null)
   const [processMessage, setProcessMessage] = useState<{ [key: string]: string }>({})
+  const [editingLanguagesChannel, setEditingLanguagesChannel] = useState<ChannelRow | null>(null)
 
   const handleToggleActive = async (channel: ChannelRow) => {
     try {
@@ -252,8 +255,19 @@ export function ChannelTable({ channels, onChannelsChange }: ChannelTableProps) 
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.95 }}
-                          className="absolute right-0 top-full z-10 mt-1 w-48 rounded-lg border border-border bg-background shadow-lg"
+                          className="absolute right-0 top-full z-10 mt-1 w-48 rounded-lg border border-border bg-background shadow-lg overflow-hidden py-1"
                         >
+                          <button
+                            onClick={() => {
+                              setEditingLanguagesChannel(channel)
+                              setActionMenu(null)
+                            }}
+                            className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-foreground hover:bg-accent transition-colors"
+                          >
+                            <Globe className="h-4 w-4 text-muted-foreground" />
+                            Edit Languages
+                          </button>
+
                           <button
                             onClick={() => handleToggleActive(channel)}
                             className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-foreground hover:bg-accent transition-colors"
@@ -299,6 +313,15 @@ export function ChannelTable({ channels, onChannelsChange }: ChannelTableProps) 
           </p>
         </div>
       )}
+
+      <EditChannelLanguagesDialog
+        isOpen={!!editingLanguagesChannel}
+        onClose={() => setEditingLanguagesChannel(null)}
+        channel={editingLanguagesChannel}
+        onUpdate={() => {
+          onChannelsChange()
+        }}
+      />
     </div>
   )
 }
