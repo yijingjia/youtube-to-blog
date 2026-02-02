@@ -84,7 +84,7 @@ export function FilterBar({ channels, languages }: FilterBarProps) {
   ].filter(Boolean).length
 
   return (
-    <div className="sticky top-16 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:sticky sm:top-16">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6 lg:px-8">
         <div className="flex flex-1 flex-wrap items-center gap-2">
           <SearchInput 
