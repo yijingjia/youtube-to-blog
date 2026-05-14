@@ -5,8 +5,9 @@ Configuration management for YouTube to Blog backend.
 import os
 import sys
 from pathlib import Path
-from dotenv import load_dotenv
 from typing import List
+
+from dotenv import load_dotenv
 from loguru import logger
 
 # Load environment variables
@@ -62,8 +63,8 @@ YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 # GLM API Configuration
 GLM_API_KEY = os.getenv("GLM_API_KEY")
 GLM_API_BASE = os.getenv("GLM_API_BASE", "https://open.bigmodel.cn/api/paas/v4/")
-GLM_MODEL_TRANSLATE = os.getenv("GLM_MODEL_TRANSLATE", "glm-4-flash")
-GLM_MODEL_GENERATE = os.getenv("GLM_MODEL_GENERATE", "glm-4-air")
+GLM_MODEL_TRANSLATE = os.getenv("GLM_MODEL_TRANSLATE", "glm-4.7")
+GLM_MODEL_GENERATE = os.getenv("GLM_MODEL_GENERATE", "glm-4.7")
 
 # OpenAI Configuration (Optional - for Whisper fallback)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
